@@ -1,0 +1,114 @@
+﻿@using BookStore.ViewModels;
+@using BookStore.Services;
+@using BookStore.DAL;
+@model ResultList<AuthorViewModel>
+
+@{
+    ViewBag.Title = "Manage Book Authors";
+    var queryOptions = Model.QueryOptions;
+    var bookId = ViewData["BookId"];
+    var bookTitle = ViewData["BookTitle"];
+    int intBookId = (int)bookId;
+}
+
+<h2>@ViewBag.Title</h2><hr />
+
+@{
+    <h4>@bookTitle</h4>
+}
+
+<div style="display: none" data-bind="visible: pagingService.entities().length > 0">
+    <table class="table table-bordered table-striped">
+
+        <thead>
+            <tr>
+
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody data-bind="foreach: pagingService.entities">
+            <tr>
+                <td data-bind="text: lastName"></td>
+                <td data-bind="text: firstName"></td>
+
+                <td>
+                    <a data-bind="attr: { href: '@Url.Action("RemoveBookAuthor", new { bookId })&authorId=' + id }"
+                       class="btn btn-primary">Remove</a>
+
+                    @*  <a data-bind="
+                        click: $parent.showDeleteModal, attr: { href: '@Url.Action("Delete")/' + id}"
+                            class="btn btn-danger">Are you sure?</a>*@
+
+                </td>
+            </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+<div style="display: none" data-bind="visible: pagingService.entities().length == 0"
+     class="alert alert-warning alert-dismissable" role="alert">
+    <button type="button" class="close" data-dismiss="alert">
+        <span aria-hidden="true">&times;</span>
+        <span class="sr-only">Close</span>
+    </button>
+    There are no authors to display.
+    @*Click @Html.ActionLink("here", "Create") to create one now.*@
+</div>
+
+@{
+    AuthorSelectList authorSelectList = new AuthorSelectList();
+    SelectList selectAuthors = authorSelectList.GetAuthorUnSelectList((int)bookId);
+}
+
+@using (Html.BeginForm("AddBookAuthor", "Authors", FormMethod.Get))
+
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+
+        <div class="form-group">
+            @Html.Label("Select Author: ", htmlAttributes:
+                                                                                                                                                                        new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+
+                <input type="hidden" name="bookId" value="@bookId" />
+
+                @Html.DropDownList("authorId", selectAuthors,
+                                               new
+                                               {
+                                                   htmlAttributes = new { @class = "form-control" }
+
+
+                                               })
+
+                <input type="submit" value="Add author" />
+
+            </div>
+        </div>
+
+    </div>
+
+
+}
+
+<div>
+
+</div>
+
+@section Scripts {
+
+    @Scripts.Render("~/Scripts/Services/PagingService.js",
+        "~/Scripts/ViewModels/AuthorIndexViewModel.js")
+
+    <script>
+        var viewModel = new AuthorIndexViewModel(@Html.HtmlConvertToJson(Model));
+        ko.applyBindings(viewModel);
+    </script>
+}
+

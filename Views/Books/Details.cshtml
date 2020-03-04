@@ -1,0 +1,109 @@
+﻿@model BookStore.ViewModels.BookViewModel
+@using BookStore.ViewModels
+@using BookStore.Behaviors
+
+@{
+    ViewBag.Title = "Details";
+}
+@*  *@
+<h2>Book Details</h2>
+
+<hr />
+<h4>@Model.Title</h4>
+<div>
+
+    @{
+        var authorsList = new AuthorList();
+        Model.Authors = authorsList.GetListOfAuthors(Model.Id);
+    }
+
+    <dl class="dl-horizontal">
+
+        @if (Model.Edition != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.Edition)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Edition)
+            </dd>
+        }
+        @if (Model.Binding != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.Binding)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Binding)
+            </dd>
+        }
+        @if (Model.Authors != null)
+        {
+            <dt>
+                @Html.DisplayName("Author(s)")
+            </dt>
+            <dd>
+                @foreach (var item in Model.Authors)
+                {
+                    string fullName = item.FirstName + " " + item.LastName + "<br />";
+                    @Html.Raw(fullName)
+                }
+            </dd>
+        }
+        @if (Model.Publisher != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.Publisher)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Publisher)
+            </dd>
+        }
+        @if (Model.Isbn != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.Isbn)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Isbn)
+            </dd>
+        }
+
+
+        @if (Model.Price != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.Price)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Price)
+            </dd>
+        }
+
+
+    </dl>
+
+    @*ImageService imageService = new ImageService();  // not working . . . 
+    if (imageService.IsImage(Model.LargeImage))*@
+
+    @{if (Model.LargeImage != null)
+        {
+            <img src="@Model.LargeImage" alt="@Model.Title" style="padding:10px" align="right" />
+        }
+        else if (Model.ThumbnailImage != null)
+        {
+            <img src="@Model.ThumbnailImage" alt="@Model.Title" style="padding:10px" align="right" />
+        }
+
+    }
+
+    <p>@Html.Raw(Model.Description)</p>           @*just did this to get it to line up with the image*@
+
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Books")
+</p>

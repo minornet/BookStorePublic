@@ -1,0 +1,280 @@
+﻿@model BookStore.ViewModels.BookViewModel
+@using BookStore.ViewModels
+@using BookStore.Behaviors
+
+@{
+    var isCreating = Model.Id == 0;
+    ViewBag.Title = (isCreating) ? "Create New Book:" : "Edit Book: ";
+}
+
+@*load all the authors into the BookViewModel - ya this could get old if we have too many*@
+@{
+    var authorsList = new AuthorList();
+    Model.Authors = authorsList.GetListOfAuthors(Model.Id);
+}
+
+<div data-bind="visible: !saveCompleted()">
+
+    <h4>@ViewBag.Title</h4>
+    <h2>@Model.Title</h2>
+
+    @using (Html.BeginForm("Edit", "Books", FormMethod.Post,
+        new { data_bind = "submit: validateAndSave" }))
+
+    {@Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        @*<h4>Book title, etc</h4>*@
+
+        @{ var DEBUG = new isDebug();
+            if (DEBUG.RunningInDebugMode() == true)
+            {
+                <div class="form-group" id="modelId">
+                    @Html.LabelFor(model => model.Id, htmlAttributes:
+                        new { @class = "control-label col-md-2" })
+                    <div class="control-label col-md-2">
+                        @Html.DisplayTextFor(model => model.Id)
+                    </div>
+                </div>
+            }
+        }
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Title, htmlAttributes: 
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Title, 
+                    new { htmlAttributes =
+                        new {
+                                @class = "form-control",
+                                data_bind = "value: book.title"
+                            }
+            })
+                @Html.ValidationMessageFor(model => model.Title, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Edition, htmlAttributes:
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Edition, 
+               new {
+                    htmlAttributes =
+                        new {
+                                @class = "form-control",
+                                data_bind = "value: book.edition"
+                            }
+            })
+                @Html.ValidationMessageFor(model => model.Edition, "",
+                     new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Binding, htmlAttributes:
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Binding, 
+                new
+                    { htmlAttributes =
+                        new
+                        {
+                            @class = "form-control",
+                            data_bind = "value: book.binding"
+                        }
+            })
+                @Html.ValidationMessageFor(model => model.Binding, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @*  Really can't add authors here until the book is saved in the db.
+            Possibly could create a temp table for authors (viewbag?) that would be saved
+            after we have a book id.
+        *@
+
+        @if (!isCreating)
+
+        {
+
+            string authorsLabel = "Authors: ";
+            <div class="form-group">
+                @Html.Label(authorsLabel, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @foreach (var item in Model.Authors)
+                    {
+                        string fullName = item.FirstName + " " + item.LastName + "<br />";
+                        @Html.Raw(fullName)
+                    }
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <div class="control-label col-md-2"></div>
+                <div class="col-md-10">
+                    <input type="button" value="Manage Authors" 
+                           onclick="location.href='@Url.Action("BookAuthors", "Authors", 
+                                new { bookId = Model.Id, bookTitle = Model.Title })'" />
+                </div>
+            </div>
+
+        }
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Publisher, htmlAttributes:
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Publisher, 
+                    new { htmlAttributes =
+                        new {
+                                @class = "form-control",
+                                data_bind = "value: book.publisher"
+                            }
+                        })
+                @Html.ValidationMessageFor(model => model.Publisher, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @* want to add field validation here *@
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Isbn, htmlAttributes:
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Isbn, 
+                new { htmlAttributes =
+                    new
+                    {
+                        @class = "form-control",
+                        data_bind = "value: book.isbn"
+                    }
+            })
+                @Html.ValidationMessageFor(model => model.Isbn, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+            
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes:
+                   new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+
+                @Html.TextAreaFor(model => model.Description,
+                    new { @class = "form-control", @rows = 10, data_bind = "value: book.description" })
+
+                @Html.ValidationMessageFor(model => model.Description, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ThumbnailImage, htmlAttributes:
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ThumbnailImage, 
+                new { htmlAttributes = 
+                    new {
+                        @class = "form-control", 
+                        data_bind = "value: book.thumbnailImage"
+                        }
+                })
+                @Html.ValidationMessageFor(model => model.ThumbnailImage, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.LargeImage, htmlAttributes:
+                    new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.LargeImage, 
+                    new {
+                        htmlAttributes =
+                            new { @class = "form-control",
+                                data_bind = "value: book.largeImage"
+                                }
+                        })
+                @Html.ValidationMessageFor(model => model.LargeImage, "",
+                    new { @class = "text-danger" }) 
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Price, htmlAttributes:
+                new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Price, 
+                    new {
+                        htmlAttributes =
+                            new
+                                {
+                                    @class = "form-control",
+                                    data_bind = "value: book.price"
+                                }
+                        })
+                @Html.ValidationMessageFor(model => model.Price, "",
+                    new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10" data-bind="visible: !sending()">
+                <input type="submit"
+                       value="@if (isCreating)
+                                 {@Html.Raw(" Create") }
+                       else
+                       { @Html.Raw("Update") }"
+                       class="btn btn-default" />
+            </div>
+
+            <div class="progress" data_bind="visible: sending">
+                <div class="progress-bar progress-bar-info progress-bar-striped active"
+                     role="progressbar" aria-valuenow="100"
+                     aria-valuemin="0" aria-valuemax="100"
+                     style="width: 100%">
+                    <span class="sr-only"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+</div>
+
+<div>
+    @Html.ActionLink("Back to List", "Books")
+</div>
+
+@section Scripts
+{
+    @Scripts.Render("~/bundles/jqueryval",
+        "~/Scripts/ViewModels/BookFormViewModel.js")
+
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+
+    @*<script>
+        // for removing authors from the add list that are already added
+        function myFunction() {
+            var x = document.getElementById("Authors");
+            x.remove(x.selectedIndex);
+        }
+    </script>*@
+
+    <script>
+        var BookViewModel = new BookFormViewModel(@Html.HtmlConvertToJson(Model));
+        bindBookViewModel();
+
+        function bindBookViewModel() {
+            ko.applyBindings(BookViewModel);
+         }
+    </script>
+
+}
